@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0e0e10">
+<title>Charakter</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--dk:#0e0e10;
+--dk2:#16161a;
+--dk3:#1e1e24;
+--dk4:#26262e;
+--border:#2e2e38;
+--border2:#3a3a48;
+--text:#e8e6e0;
+--text2:#8a8898;
+--text3:#5a5868;
+--amber:#c8922a;
+--amber2:#f0b84a;
+--red:#8a2828;
+--red2:#c44040;
+--green2:#2e8a52;
+}
+html,body{background:var(--dk);color:var(--text);min-height:100vh}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:680px;margin:0 auto;padding:1rem}
+input,textarea,select{font-family:inherit;font-size:13px;color:var(--text);background:var(--dk3);border:1px solid var(--border);padding:4px 8px;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--amber)}
+.panel{background:var(--dk2);border:1px solid var(--border);border-radius:3px;padding:1rem 1.25rem;margin-bottom:0.75rem}
+.header-panel{display:flex;gap:1rem;align-items:flex-start}
+.avatar-wrap{position:relative;width:76px;height:76px;flex-shrink:0;cursor:pointer;border:1px solid var(--border2)}
+.avatar-img{width:76px;height:76px;object-fit:cover;display:block}
+.avatar-placeholder{width:76px;height:76px;background:var(--dk3);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700;color:var(--amber)}
+.avatar-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.15s;font-size:10px;color:var(--text2);text-align:center;letter-spacing:0.05em}
+.avatar-wrap:hover .avatar-overlay,.avatar-wrap:focus .avatar-overlay{opacity:1}
+.char-name-input{font-size:17px;font-weight:700;color:var(--text);background:transparent;border:none;border-bottom:1px solid var(--border2);width:100%;padding:2px 0;margin-bottom:4px}
+.char-name-input:focus{outline:none;border-bottom-color:var(--amber)}
+.char-sub-input{font-size:11px;color:var(--text2);background:transparent;border:none;border-bottom:1px solid transparent;width:100%;padding:1px 0;margin-bottom:2px;letter-spacing:0.06em;text-transform:uppercase}
+.char-sub-input:focus{outline:none;border-bottom:1px solid var(--border2)}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+.info-grid input{font-size:11px;color:var(--text2);background:var(--dk3)}
+.info-grid input:focus{color:var(--text)}
+.sep{border:none;border-top:1px solid var(--border);margin:0.75rem 0}
+.stats-table{width:100%;border-collapse:collapse}
+.stats-table tr{border-bottom:1px solid var(--border)}
+.stats-table tr:last-child{border-bottom:none}
+.stats-table td{padding:5px 0;vertical-align:middle}
+.stat-label{font-size:11px;color:var(--text2);width:150px;letter-spacing:0.03em}
+.stars{display:flex;gap:2px}
+.star{font-size:11px;color:var(--border2)}
+.star.on{color:var(--amber)}
+.traits-list{display:flex;flex-direction:column;gap:3px;margin-bottom:0.5rem}
+.trait-card{background:var(--dk3);border:1px solid var(--border);border-left:2px solid var(--border2)}
+.trait-card.positive{border-left-color:var(--green2)}
+.trait-card.negative{border-left-color:var(--red2)}
+.trait-card.mixed{border-left-color:var(--amber)}
+.trait-header{display:flex;align-items:center;gap:8px;padding:7px 10px;cursor:pointer;user-select:none}
+.trait-header:hover{background:var(--dk4)}
+.trait-header-name{font-size:12px;color:var(--text);flex:1;letter-spacing:0.02em}
+.trait-chevron{font-size:9px;color:var(--text3);transition:transform 0.15s;flex-shrink:0}
+.trait-card.open .trait-chevron{transform:rotate(90deg)}
+.trait-body{display:none;padding:8px 10px 10px;border-top:1px solid var(--border)}
+.trait-card.open .trait-body{display:block}
+.trait-effect{font-size:10px;color:var(--amber);margin:0 0 6px;letter-spacing:0.06em}
+.editable-field{font-size:11px;color:var(--text2);line-height:1.6;cursor:text;padding:3px 4px;border:1px solid transparent;border-radius:2px}
+.editable-field:hover{border-color:var(--border2);color:var(--text)}
+.editable-field:focus{outline:none;border-color:var(--amber);color:var(--text);background:var(--dk2)}
+.editable-field[data-field="name"]{font-size:12px;color:var(--text);font-weight:500;width:100%}
+.editable-field[data-field="effect"]{color:var(--amber);font-size:10px;letter-spacing:0.06em;width:100%}
+.trait-actions{display:flex;gap:6px;margin-top:8px;align-items:center}
+.del-small{font-size:10px;cursor:pointer;background:transparent;border:1px solid var(--red);color:var(--red2);padding:2px 8px;letter-spacing:0.05em}
+.del-small:hover{background:var(--red);color:var(--text)}
+.del-x{background:none;border:none;padding:0;cursor:pointer;color:var(--text3);font-size:16px;line-height:1}
+.del-x:hover{color:var(--red2)}
+.add-form{background:var(--dk3);border:1px dashed var(--border2);padding:0.75rem 1rem;margin-bottom:0.75rem}
+.add-label{font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.effect-row{display:flex;gap:4px;align-items:center;margin-bottom:4px}
+.effect-row select{width:46px;flex-shrink:0}
+.effect-row input.num{width:42px;flex-shrink:0}
+.effect-row input.ename{flex:1}
+.btn-ghost{font-size:10px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--text2);padding:4px 10px;letter-spacing:0.06em}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber)}
+.btn-main{font-size:10px;cursor:pointer;background:var(--amber);border:1px solid var(--amber);color:var(--dk);padding:5px 14px;letter-spacing:0.08em;margin-top:6px;font-weight:700}
+.btn-main:hover{background:var(--amber2)}
+.companion-card{background:var(--dk3);border:1px solid var(--border);padding:8px 10px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px}
+.companion-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:2px;letter-spacing:0.02em}
+.companion-effect{font-size:10px;color:var(--amber);letter-spacing:0.05em}
+.companion-desc{font-size:11px;color:var(--text2);margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="panel header-panel">
+  <div class="avatar-wrap" onclick="document.getElementById('photoInput').click()" tabindex="0">
+    <div class="avatar-placeholder" id="avatarPlaceholder"><span id="avatarInitials">D</span></div>
+    <img id="avatarImg" class="avatar-img" style="display:none" src="" alt="Foto"/>
+    <div class="avatar-overlay">FOTO<br>LADEN</div>
+    <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="loadPhoto(event)">
+  </div>
+  <div style="flex:1">
+    <input class="char-name-input" id="charName" type="text" value="Donald J. Trump" oninput="updateInitials()" placeholder="NAME">
+    <input class="char-sub-input" id="charTitle" type="text" value="45. & 47. Präsident der Vereinigten Staaten" placeholder="Titel / Beiname">
+    <div class="info-grid">
+      <input id="charJob" type="text" value="Commander in Chief" placeholder="Beruf / Tätigkeit">
+      <input id="charPlace" type="text" value="Mar-a-Lago, FL" placeholder="Ort">
+      <input id="charAge" type="text" value="78" placeholder="Alter">
+    </div>
+  </div>
+</div>
+
+<div class="panel" style="padding:0.5rem 1rem">
+  <table class="stats-table" id="statsTable"></table>
+</div>
+
+<div class="traits-list" id="traitsGrid"></div>
+
+<div class="add-form">
+  <p class="add-label">+ Neue Eigenschaft</p>
+  <div class="form-row">
+    <input type="text" id="newTraitName" placeholder="Bezeichnung">
+    <input type="text" id="newTraitDesc" placeholder="Beschreibung">
+  </div>
+  <div id="effectRows"></div>
+  <button class="btn-ghost" onclick="addEffectRow('effectRows')">+ Effekt</button><br>
+  <button class="btn-main" onclick="addTrait()">EINTRAGEN</button>
+</div>
+
+<hr class="sep">
+
+<div id="companionsGrid"></div>
+
+<div class="add-form">
+  <p class="add-label">+ Neuer Anhänger</p>
+  <div class="form-row">
+    <input type="text" id="newCompName" placeholder="Name">
+    <input type="text" id="newCompDesc" placeholder="Beschreibung (optional)">
+  </div>
+  <div id="compEffectRows"></div>
+  <button class="btn-ghost" onclick="addEffectRow('compEffectRows')">+ Effekt</button><br>
+  <button class="btn-main" onclick="addCompanion()">EINTRAGEN</button>
+</div>
+
+<script>
+var traits=[
+  {name:"Mediale Dominanz",desc:"Füllt jeden Raum, jeden Feed, jedes Gespräch. Aufmerksamkeit ist Währung – und er ist reich.",effects:[{sign:"+",val:5,stat:"Einfluss"},{sign:"+",val:3,stat:"Bekanntheit"},{sign:"-",val:2,stat:"Subtilität"}]},
+  {name:"Verhandlungsinstinkt",desc:"Deal-Denken in jeder Situation. Alles ist verhandelbar. Nichts ist endgültig. Außer der eigene Sieg.",effects:[{sign:"+",val:4,stat:"Diplomatie"},{sign:"-",val:2,stat:"Verlässlichkeit"}]},
+  {name:"Resilienz gegen Kritik",desc:"Hat mehr Skandale überlebt als die meisten Karrieren lang sind. Kritik prallt ab oder wird als Treibstoff genutzt.",effects:[{sign:"+",val:5,stat:"Moral"},{sign:"-",val:3,stat:"Selbstreflexion"}]},
+  {name:"Narrativkontrolle",desc:"Erschafft eigene Realität und verteidigt sie mit Ausdauer. Fakten: optional. Überzeugung: absolut.",effects:[{sign:"+",val:4,stat:"Rhetorik"},{sign:"-",val:4,stat:"Glaubwürdigkeit"}]},
+  {name:"Loyalitätsprinzip",desc:"Absolute Loyalität wird erwartet, selten erwidert. Wer abfällt, wird Feind.",effects:[{sign:"-",val:3,stat:"Bündnistiefe"},{sign:"+",val:2,stat:"Kontrolle"}]},
+  {name:"Impulssteuerung (Mangelhaft)",desc:"Tweet um 3 Uhr nachts. Pressekonferenz als Eskalation. Der Finger ist immer am Abzug.",effects:[{sign:"-",val:4,stat:"Entscheidungstempo"},{sign:"+",val:2,stat:"Unberechenbarkeit"}]}
+];
+
+var companions=[
+  {name:"Truth Social",desc:"Eigene Plattform, eigene Regeln.",effects:[{sign:"+",val:3,stat:"Rhetorik"},{sign:"-",val:2,stat:"Reichweite"}]},
+  {name:"MAGA-Basis",desc:"78 Millionen Stammwähler. Unerschütterlich.",effects:[{sign:"+",val:5,stat:"Moral"},{sign:"+",val:4,stat:"Einfluss"}]},
+  {name:"Anwaltsteam",desc:"Immer beschäftigt.",effects:[{sign:"+",val:3,stat:"Überlebensfähigkeit"},{sign:"-",val:4,stat:"Finanzen"}]}
+];
+
+function computeStats(){
+  var s={};
+  function apply(list){list.forEach(function(t){t.effects.forEach(function(e){if(!s[e.stat])s[e.stat]=0;s[e.stat]+=(e.sign==="+")?(+e.val):(-(+e.val))})});}
+  apply(traits);apply(companions);return s;
+}
+function clamp(v){return Math.min(10,Math.max(0,v))}
+function renderStars(val){
+  var h="";for(var i=1;i<=10;i++)h+='<span class="star '+(i<=val?"on":"")+'">■</span>';return h;
+}
+function renderStats(){
+  var s=computeStats(),t=document.getElementById("statsTable"),h="";
+  Object.keys(s).forEach(function(k){
+    var raw=s[k],display=clamp(raw);
+    h+='<tr><td class="stat-label">'+k+'</td><td><div class="stars">'+renderStars(display)+'</div></td></tr>';
+  });
+  if(!h)h='<tr><td colspan="2" style="font-size:11px;color:var(--text3);padding:6px 0">— keine effekte —</td></tr>';
+  t.innerHTML=h;
+}
+function dotClass(effects){
+  var p=effects.some(function(e){return e.sign==="+"});
+  var n=effects.some(function(e){return e.sign==="-"});
+  if(p&&n)return"mixed";if(n)return"negative";return"positive";
+}
+function effectStr(effects){return effects.map(function(e){return e.sign+e.val+" "+e.stat}).join("  /  ")}
+
+function renderTraits(){
+  var g=document.getElementById("traitsGrid");g.innerHTML="";
+  traits.forEach(function(t,i){
+    var card=document.createElement("div");
+    card.className="trait-card "+dotClass(t.effects);
+    card.innerHTML=
+      '<div class="trait-header" onclick="this.parentNode.classList.toggle(\'open\')">'
+        +'<span class="trait-header-name" contenteditable="false" id="tname'+i+'" onclick="event.stopPropagation();startEditInline(this,'+i+',\'name\')">'+escHtml(t.name)+'</span>'
+        +'<span class="trait-chevron">▶</span>'
+      +'</div>'
+      +'<div class="trait-body">'
+        +'<div class="editable-field" data-field="effect" contenteditable="true" id="teff'+i+'" onblur="saveEffect('+i+',this)" onclick="event.stopPropagation()">'+escHtml(effectStr(t.effects))+'</div>'
+        +'<div class="editable-field" contenteditable="true" id="tdesc'+i+'" onblur="saveDesc('+i+',this)" style="margin-top:5px">'+escHtml(t.desc)+'</div>'
+        +'<div class="trait-actions"><button class="del-small" onclick="deleteTrait('+i+')">LÖSCHEN</button><span style="font-size:10px;color:var(--text3);margin-left:4px">Felder direkt klicken zum Bearbeiten</span></div>'
+      +'</div>';
+    g.appendChild(card);
+  });
+}
+
+function startEditInline(el,i,field){
+  el.contentEditable="true";el.focus();
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function saveDesc(i,el){
+  traits[i].desc=el.innerText.trim();
+}
+
+function saveEffect(i,el){
+  var raw=el.innerText.trim();
+  var effects=[];
+  raw.split("/").forEach(function(part){
+    part=part.trim();
+    var m=part.match(/^([+\-])(\d+)\s+(.+)$/);
+    if(m)effects.push({sign:m[1],val:parseInt(m[2]),stat:m[3].trim()});
+  });
+  if(effects.length>0){traits[i].effects=effects;renderStats();}
+}
+
+function deleteTrait(i){traits.splice(i,1);renderAll()}
+
+function renderCompanions(){
+  var g=document.getElementById("companionsGrid");g.innerHTML="";
+  companions.forEach(function(c,i){
+    var d=document.createElement("div");
+    d.className="companion-card";
+    d.innerHTML='<div style="flex:1">'
+      +'<div class="companion-name editable-field" data-field="name" contenteditable="true" onblur="saveCompField('+i+',\'name\',this)">'+escHtml(c.name)+'</div>'
+      +'<div class="companion-effect editable-field" data-field="effect" contenteditable="true" onblur="saveCompEffect('+i+',this)">'+escHtml(effectStr(c.effects))+'</div>'
+      +(c.desc?'<div class="companion-desc editable-field" contenteditable="true" onblur="saveCompField('+i+',\'desc\',this)">'+escHtml(c.desc)+'</div>':"")
+      +'</div>'
+      +'<button class="del-x" onclick="deleteCompanion('+i+')" title="Entfernen">×</button>';
+    g.appendChild(d);
+  });
+}
+
+function saveCompField(i,field,el){companions[i][field]=el.innerText.trim();}
+function saveCompEffect(i,el){
+  var raw=el.innerText.trim(),effects=[];
+  raw.split("/").forEach(function(part){
+    part=part.trim();
+    var m=part.match(/^([+\-])(\d+)\s+(.+)$/);
+    if(m)effects.push({sign:m[1],val:parseInt(m[2]),stat:m[3].trim()});
+  });
+  if(effects.length>0){companions[i].effects=effects;renderStats();}
+}
+function deleteCompanion(i){companions.splice(i,1);renderAll()}
+function renderAll(){renderStats();renderTraits();renderCompanions()}
+
+function parseEffectRows(cid){
+  var rows=document.getElementById(cid).querySelectorAll(".effect-row"),effects=[];
+  rows.forEach(function(r){
+    var sign=r.querySelector("select").value;
+    var val=parseInt(r.querySelector(".num").value)||0;
+    var stat=r.querySelector(".ename").value.trim();
+    if(stat&&val)effects.push({sign:sign,val:val,stat:stat});
+  });
+  return effects;
+}
+function addTrait(){
+  var name=document.getElementById("newTraitName").value.trim();
+  var desc=document.getElementById("newTraitDesc").value.trim();
+  var effects=parseEffectRows("effectRows");
+  if(!name)return;
+  traits.push({name:name,desc:desc,effects:effects});
+  document.getElementById("newTraitName").value="";
+  document.getElementById("newTraitDesc").value="";
+  document.getElementById("effectRows").innerHTML="";
+  renderAll();
+}
+function addCompanion(){
+  var name=document.getElementById("newCompName").value.trim();
+  var desc=document.getElementById("newCompDesc").value.trim();
+  var effects=parseEffectRows("compEffectRows");
+  if(!name)return;
+  companions.push({name:name,desc:desc,effects:effects});
+  document.getElementById("newCompName").value="";
+  document.getElementById("newCompDesc").value="";
+  document.getElementById("compEffectRows").innerHTML="";
+  renderAll();
+}
+function makeEffectRow(){
+  var d=document.createElement("div");d.className="effect-row";
+  d.innerHTML='<select style="width:46px"><option value="+">+</option><option value="-">−</option></select>'
+    +'<input type="number" class="num" style="width:42px" min="1" max="10" value="2">'
+    +'<input type="text" class="ename" placeholder="Fähigkeit">'
+    +'<button class="del-x" style="font-size:18px" onclick="this.parentNode.remove()">×</button>';
+  return d;
+}
+function addEffectRow(id){document.getElementById(id).appendChild(makeEffectRow())}
+function updateInitials(){
+  var n=document.getElementById("charName").value||"?";
+  document.getElementById("avatarInitials").textContent=n.charAt(0).toUpperCase();
+}
+function loadPhoto(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    document.getElementById("avatarImg").src=ev.target.result;
+    document.getElementById("avatarImg").style.display="block";
+    document.getElementById("avatarPlaceholder").style.display="none";
+  };
+  r.readAsDataURL(f);
+}
+renderAll();
+</script>
+</body>
+</html>
